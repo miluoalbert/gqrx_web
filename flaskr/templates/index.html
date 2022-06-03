@@ -1,0 +1,156 @@
+<!doctype html>
+<title>Flaskr</title>
+<nav>
+  <h1>GQRX</h1>
+</nav>
+
+{% block header %}
+  <h1>{% block title %}控制{% endblock %}</h1>
+{% endblock %}
+
+
+{% block content %}
+  <form method="post">
+    <label for="title">Set</label>
+    <input name="freq" id="freq" value="{{ request.form['freq'] }}" required>
+    <input id="freq_btn" type="button" value="修改频率">
+    </br>
+    <label for="body">Body</label>
+    <input name="sql" id="sql" value="{{ request.form['sql'] }}" required>
+    <input id="sql_btn" type="button" value="修改阈值">
+    <div id="place_for_suggestions"></div>
+    <input id="check" type="button" value="更新">
+    </br>
+    <h3>强度</h3><div id="strength">-</div>
+    <input id="get_str" type="button" value="强度">
+    </br>
+    <h3>录音状态</h3><div id="record">-</div>
+    <input id="rec_status" class="rec" action="get" type="button" value="获取">
+    <input id="rec_on" class="rec" action="on" type="button" value="开">
+    <input id="rec_off" class="rec" action="off" type="button" value="关">
+    <h3>预设频率</h3>
+    <input id="atis" type="button" class="pre" freq="132245000" value="通波">
+    <input id="apn" type="button" class="pre" freq="121945000" value="机坪">
+    <input id="ar4" type="button" class="pre" freq="135745000" value="AR15-杭州方向">
+    <input id="ar15" type="button" class="pre" freq="125945000" value="AR04-虹桥北">
+    </br>
+    <input id="ap5" type="button" class="pre" freq="126645000" value="AP05">
+    <input id="twr-e" type="button" class="pre" freq="118095000" value="TWR-东">
+    <input id="twr-w" type="button" class="pre" freq="118645000" value="TWR-西">
+    <input id="gnd-e" type="button" class="pre" freq="121595000" value="地面东">
+    <input id="gnd-w" type="button" class="pre" freq="121845000" value="地面西">
+    </br>ZSPD
+    </br>
+    <input id="ap02" type="button" class="pre" freq="125395000" value="AP02">
+    <input id="img" type="button" class="pre" freq="121495000" value="航空应急">
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <script>
+    $("#check").click(function(){
+        var text = $(this).val();
+        $.ajax({
+          url: "/get_info",
+          type: "get",
+          data: {jsdata: text},
+          success: function(response) {
+            // $("#place_for_suggestions").html(response);
+            $("#freq").val(response['freq']);
+            $("#sql").val(response['sql']);
+          },
+          error: function(xhr) {
+            //Do Something to handle error
+            console.log(xhr)
+          }
+        });
+    });
+
+    $("#sql_btn").click(function(){
+        var text = $("#sql").val();
+        $.ajax({
+          url: "/sql",
+          type: "get",
+          data: {sql: text},
+          success: function(response) {
+            $("#sql").val(response);
+          },
+          error: function(xhr) {
+            //Do Something to handle error
+            console.log(xhr)
+          }
+        });
+    });
+
+    $("#freq_btn").click(function(){
+        var text = $("#freq").val();
+        $.ajax({
+          url: "/freq",
+          type: "get",
+          data: {freq: text},
+          success: function(response) {
+            $("#freq").val(response);
+          },
+          error: function(xhr) {
+            //Do Something to handle error
+            console.log(xhr)
+          }
+        });
+    });
+
+    $("#get_str").click(function(){
+        $.ajax({
+          url: "/get_str",
+          type: "get",
+          data: {},
+          success: function(response) {
+            $("#strength").html(response);
+          },
+          error: function(xhr) {
+            //Do Something to handle error
+            console.log(xhr)
+          }
+        });
+    });
+    $(".rec").click(function(){
+      action = $(this).attr("action")
+      url = ""
+      data = {}
+      if(action == "get"){
+        url = "rec_status"
+      } else {
+        url = "rec_set"
+        if (action == "on") {
+          data = {rec: '1'}
+        } else {
+          data = {rec: '0'}
+        }
+      }
+      $.ajax({
+        url: url,
+        type: "get",
+        data: data,
+        success: function(response) {
+          $("#record").html(response);
+        },
+        error: function(xhr) {
+          console.log(xhr)
+        }
+      });
+    });
+    $(".pre").click(function(){
+      text = $(this).attr("freq")
+      $.ajax({
+        url: "/freq",
+        type: "get",
+        data: {freq: text},
+        success: function(response) {
+          $("#freq").val(response);
+        },
+        error: function(xhr) {
+          console.log(xhr)
+        }
+      });
+    });
+    </script>
+  </form>
+{% endblock %}
